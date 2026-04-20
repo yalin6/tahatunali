@@ -24,15 +24,15 @@ body{background:var(--bg);font-family:'Space Grotesk',sans-serif;color:var(--fg)
 
 /* NAV */
 nav{position:fixed;top:0;left:0;right:0;z-index:500;display:flex;justify-content:space-between;align-items:center;padding:16px 40px;background:rgba(4,4,10,.88);backdrop-filter:blur(18px);border-bottom:1px solid rgba(0,240,255,.07);}
-.nav-logo{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--c5);cursor:pointer;}
+.nav-logo{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:.15em;text-transform:uppercase;color:var(--c5);text-decoration:none;}
 .nav-links{display:flex;gap:4px;list-style:none;}
-.nb{font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:50px;color:var(--fg3);background:transparent;border:none;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:color .2s,background .2s;}
+.nb{font-size:11px;letter-spacing:.1em;text-transform:uppercase;padding:6px 14px;border-radius:50px;color:var(--fg3);background:transparent;border:none;font-family:'Space Grotesk',sans-serif;cursor:pointer;transition:color .2s,background .2s;text-decoration:none;display:inline-block;}
 .nb:hover{color:var(--fg);}
 .nb.on{color:var(--c5);background:rgba(0,240,255,.08);}
 
 /* PAGES */
-.page{display:none;position:relative;z-index:2;}
-.page.on{display:block;}
+.page{display:block;position:relative;z-index:2;scroll-margin-top:58px;}
+/* pages always visible */
 
 /* CENTERED WRAPPER */
 .sw{width:100%;max-width:900px;margin:0 auto;padding:100px clamp(16px,4vw,32px) 80px;}
@@ -197,17 +197,17 @@ footer{border-top:1px solid rgba(255,255,255,.05);padding:20px 40px;display:flex
 <div id="cur-ring"></div>
 
 <nav>
-  <span class="nav-logo" id="nav-logo">T.E. Tunalı</span>
+  <a class="nav-logo" href="#p-hero">T.E. Tunalı</a>
   <ul class="nav-links">
-    <li><button class="nb on" id="nav-hero">Hakkımda</button></li>
-    <li><button class="nb"    id="nav-exp">Deneyim</button></li>
-    <li><button class="nb"    id="nav-sk">Skills</button></li>
-    <li><button class="nb"    id="nav-ct">İletişim</button></li>
+    <li><a class="nb" href="#p-hero">Hakkımda</a></li>
+    <li><a class="nb" href="#p-exp">Deneyim</a></li>
+    <li><a class="nb" href="#p-sk">Skills</a></li>
+    <li><a class="nb" href="#p-ct">İletişim</a></li>
   </ul>
 </nav>
 
 <!-- ════ HERO ════ -->
-<div class="page on" id="p-hero">
+<div class="page" id="p-hero">
 <div id="p-hero-inner" style="min-height:100vh;display:flex;align-items:center;">
   <div class="hi">
     <div class="h-eye">Mechanical Engineer · Istanbul</div>
@@ -635,25 +635,22 @@ footer{border-top:1px solid rgba(255,255,255,.05);padding:20px 40px;display:flex
 <script>
 // ══ ALL JS HERE — runs after DOM is fully parsed ══
 
-// ── NAV ──
+// ── NAV active on scroll ──
 const PAGES = ['hero','exp','sk','ct'];
-
-function go(id) {
-  PAGES.forEach(p => {
-    document.getElementById('p-' + p).classList.remove('on');
-    document.getElementById('nav-' + p).classList.remove('on');
-  });
-  document.getElementById('p-' + id).classList.add('on');
-  document.getElementById('nav-' + id).classList.add('on');
-  window.scrollTo(0, 0);
-  setTimeout(revealAll, 50);
-  if (id === 'exp') setTimeout(revealAll, 80);
-}
-
+const navLinks = {};
 PAGES.forEach(id => {
-  document.getElementById('nav-' + id).addEventListener('click', () => go(id));
+  navLinks[id] = document.querySelector(`a[href="#p-${id}"]`);
 });
-document.getElementById('nav-logo').addEventListener('click', () => go('hero'));
+window.addEventListener('scroll', () => {
+  let cur = 'hero';
+  PAGES.forEach(id => {
+    const el = document.getElementById('p-' + id);
+    if (el && window.scrollY >= el.offsetTop - 120) cur = id;
+  });
+  PAGES.forEach(id => {
+    if (navLinks[id]) navLinks[id].classList.toggle('on', id === cur);
+  });
+}, {passive:true});
 
 // ── THERMAL COLOR ──
 function tCol(t) {
@@ -826,13 +823,10 @@ document.querySelectorAll('.nb,.tc,.ci,.pc,.ec,.sc,.lc,.card').forEach(el => {
 // thermal panel removed
 
 // ── SCROLL REVEAL ──
-function revealAll() {
-  const obs = new IntersectionObserver(es => {
-    es.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
-  }, {threshold:.06});
-  document.querySelectorAll('.reveal').forEach(el => { el.classList.remove('vis'); obs.observe(el); });
-}
-revealAll();
+const revObs = new IntersectionObserver(es => {
+  es.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); });
+}, {threshold:.06});
+document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
 </script>
 </body>
 </html>
